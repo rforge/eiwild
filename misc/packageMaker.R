@@ -15,7 +15,7 @@ dev_help("tuneVars")
 dev_example("tuneVars")
 
 build("../pkg/eiwild/")
-
+build("../pkg/eiwild/", binary=TRUE)
 
 
 # During development
@@ -27,9 +27,11 @@ library(eiwild) # uses the development version
 
 load_all("../pkg/eiwild/")
 document("../pkg/eiwild/")
-check("../pkg/eiwild")
 
-show_news("../pkg/eiwild/")
+devtools:::check("../pkg/eiwild")
+clean_dll("../pkg/eiwild/")
+
+show_news("../pkg/eiwild/", FALSE)
 
 
 
