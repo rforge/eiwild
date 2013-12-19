@@ -30,6 +30,7 @@ document("../pkg/eiwild/")
 
 devtools:::check("../pkg/eiwild")
 clean_dll("../pkg/eiwild/")
+install("../pkg/eiwild")
 
 show_news("../pkg/eiwild/", FALSE)
 
