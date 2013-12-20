@@ -47,10 +47,14 @@ arguments to \code{\link[lattice]{densityplot}} \item
 data(topleveldat)
 form <- cbind(CSU_2, SPD_2, LINK_2, GRUN_2) ~ cbind(CSU_1, SPD_1, Link_1)
 set.seed(1234)
-out1 <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"), sample=1000, thinning=2, burnin=100, verbose=100)
-out2 <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"), sample=1000, thinning=2, burnin=100, verbose=100)
-out3 <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"), sample=1000, thinning=2, burnin=100, verbose=100)
-out4 <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"), sample=1000, thinning=2, burnin=100, verbose=100)
+out1 <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"),
+                sample=1000, thinning=2, burnin=100, verbose=100)
+out2 <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"),
+                sample=1000, thinning=2, burnin=100, verbose=100)
+out3 <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"),
+                sample=1000, thinning=2, burnin=100, verbose=100)
+out4 <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"),
+                sample=1000, thinning=2, burnin=100, verbose=100)
 
 eiList <- list(out1, out2, out3, out4)
 

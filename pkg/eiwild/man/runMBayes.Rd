@@ -109,7 +109,8 @@ class(res)
 
 # better to use indAggEi
 set.seed(12345)
-res2 <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"), sample=1000, thinning=2, burnin=100,verbose=100)
+res2 <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"),
+                 sample=1000, thinning=2, burnin=100,verbose=100)
 class(res2)
 summary(res2)
 }

@@ -41,5 +41,10 @@
 #' eiwild
 #' package-eiwild
 #' 
+#' @useDynLib eiwild
+#' @import gtools
+#' @import coda
+#' @import lattice
+#' 
 #' @author Thomas Schlesinger 
 NULL

@@ -11,7 +11,8 @@ Date: 2013-12-19
 Author: Thomas Schlesinger <tho.schlesinger@gmail.com>
 Maintainer: Thomas Schlesinger <tho.schlesinger@gmail.com>
 Depends:
-    R (>= 2.15),
+    R (>= 2.15)
+Imports:
     gtools,
     coda,
     lattice

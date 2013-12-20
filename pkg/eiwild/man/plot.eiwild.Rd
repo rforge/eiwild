@@ -43,7 +43,8 @@ calculates and plots rolling mean }
 data(topleveldat)
 form <- cbind(CSU_2, SPD_2, LINK_2, GRUN_2) ~ cbind(CSU_1, SPD_1, Link_1)
 set.seed(1234)
-res <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"), sample=1000, thinning=2, burnin=100,verbose=100)
+res <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"),
+                sample=1000, thinning=2, burnin=100,verbose=100)
 
 plot(res, whichPlot=1)
 plot(res, whichPlot=2)

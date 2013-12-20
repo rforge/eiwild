@@ -2,6 +2,7 @@
 #################################################################################
 # Erstellen des eiwild-Paketes
 
+setwd("D:/R_packages/eiwild/misc/")
 library(roxygen2)
 library(devtools)
 
@@ -20,6 +21,7 @@ build("../pkg/eiwild/", binary=TRUE)
 
 # During development
 dev_mode()
+document("../pkg/eiwild/")
 install("../pkg/eiwild/")
 library(eiwild) # uses the development version
 

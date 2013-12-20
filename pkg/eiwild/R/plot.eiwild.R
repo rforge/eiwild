@@ -32,7 +32,8 @@
 #' data(topleveldat)
 #' form <- cbind(CSU_2, SPD_2, LINK_2, GRUN_2) ~ cbind(CSU_1, SPD_1, Link_1)
 #' set.seed(1234)
-#' res <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"), sample=1000, thinning=2, burnin=100,verbose=100)
+#' res <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"),
+#'                 sample=1000, thinning=2, burnin=100,verbose=100)
 #' 
 #' plot(res, whichPlot=1)
 #' plot(res, whichPlot=2)
@@ -61,7 +62,7 @@
 #' plot(res, whichPlot=4, whichCell=1, layout=FALSE)
 #' }
 #' 
-#' @S3method plot eiwild
+#' @method plot eiwild
 #' @export
 
 plot.eiwild <- function(x, whichPlot=NULL, whichParam="cellCounts", whichCell=NULL, 
@@ -103,7 +104,7 @@ plot.eiwild <- function(x, whichPlot=NULL, whichParam="cellCounts", whichCell=NU
     } else if(whichPlot==1) {
         ### Traceplot
         if(layout==TRUE){
-        par(mfrow=eiwild:::calcmfrow(length(cells)))
+        par(mfrow=calcmfrow(length(cells)))
         for(i in 1:length(cells))
             traceplot(obj[,i], main=paste("Trace of",tit[i]),...)
         par(mfrow=c(1,1))
@@ -114,7 +115,7 @@ plot.eiwild <- function(x, whichPlot=NULL, whichParam="cellCounts", whichCell=NU
     } else if(whichPlot==2){
         ### autcorrplot
         if(layout==TRUE){
-            par(mfrow=eiwild:::calcmfrow(length(cells)))
+            par(mfrow=calcmfrow(length(cells)))
             for(i in 1:length(cells))
                 autocorr.plot(obj[,i], auto.layout=FALSE, main=tit[i],...)
             par(mfrow=c(1,1))
@@ -125,7 +126,7 @@ plot.eiwild <- function(x, whichPlot=NULL, whichParam="cellCounts", whichCell=NU
     } else if(whichPlot==3){
         ### densplot
         if(layout==TRUE){
-        par(mfrow=eiwild:::calcmfrow(length(cells)))
+        par(mfrow=calcmfrow(length(cells)))
         for(i in 1:length(cells))
             densplot(obj[,i], main=paste("Density of",tit[i]),...)
         par(mfrow=c(1,1))
@@ -137,13 +138,13 @@ plot.eiwild <- function(x, whichPlot=NULL, whichParam="cellCounts", whichCell=NU
         ### Rolling Mean
         tit <- paste("Rolling mean of\n",colnames(obj))
         if(layout==TRUE){
-        par(mfrow=eiwild:::calcmfrow(length(cells)))
+        par(mfrow=calcmfrow(length(cells)))
         for(i in 1:length(cells))
-            plot(1:iter, eiwild:::rollMean(obj[,i]), type="l", main=tit[i],
+            plot(1:iter, rollMean(obj[,i]), type="l", main=tit[i],
                  xlab="Iterations", ylab="means",...)
         par(mfrow=c(1,1))
         } else {
-            plot(1:iter, eiwild:::rollMean(obj), type="l", main=tit,
+            plot(1:iter, rollMean(obj), type="l", main=tit,
                  xlab="Iterations", ylab="means",...)
         }
         
