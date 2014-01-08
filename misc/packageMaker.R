@@ -30,6 +30,8 @@ library(eiwild) # uses the development version
 load_all("../pkg/eiwild/")
 document("../pkg/eiwild/")
 
+
+
 devtools:::check("../pkg/eiwild")
 clean_dll("../pkg/eiwild/")
 install("../pkg/eiwild")

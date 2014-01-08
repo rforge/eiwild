@@ -6,7 +6,7 @@ Description: This package allows to use the Multinomial-Dirichlet-Model of
     already implemented in the eiPack-package. eiwild-package now has the
     possibility to use individual level data to support the aggregate level
     data and using different Hyperpriori-Distributions.
-Version: 0.6.1
+Version: 0.6.2
 Date: 2013-12-19
 Author: Thomas Schlesinger <tho.schlesinger@gmail.com>
 Maintainer: Thomas Schlesinger <tho.schlesinger@gmail.com>
