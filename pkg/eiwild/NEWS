@@ -1,5 +1,6 @@
 Changes in eiwild version 0.6.3
 - changed Description file (added URL)
+- fixed small bug in prioriPlot()
 
 Changes in eiwild version 0.6.2
 - Fixed a few spelling mistakes
