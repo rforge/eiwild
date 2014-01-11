@@ -111,8 +111,7 @@ prioriPlot <- function(pars, which, cols,alphaSample =10000, betaSample=300,plot
       })
       if(plot){
         hist(c(betas),xlim=c(0,1),xlab=expression(beta^rc),
-             main=sprintf("Gamma(shape: %d, rate: %d)",
-                          pars$shape, pars$rate), ...)
+             main=paste0("Gamma(shape: ", pars$shape, ", rate: ", pars$rate, ")\n columns: ", cols),...)
       }
       return(betas)
     }
