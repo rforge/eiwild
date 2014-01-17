@@ -1,7 +1,7 @@
 Package: eiwild
 Type: Package
 Title: Ecological Inference with individual and aggregate data
-Description: This package allows to use the Multinomial-Dirichlet-Model of
+Description: This package allows to use the hybrid Multinomial-Dirichlet-Model of
     Ecological Inference for estimating inner Cells of RxC-Tables. This was
     already implemented in the eiPack-package. eiwild-package now has the
     possibility to use individual level data to support the aggregate level
