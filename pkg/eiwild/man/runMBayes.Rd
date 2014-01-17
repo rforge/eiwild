@@ -113,6 +113,18 @@ res2 <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"),
                  sample=1000, thinning=2, burnin=100,verbose=100)
 class(res2)
 summary(res2)
+
+# with individual alpha-hyperpriori-parameters
+hypMat <- list(shape = matrix(c(30,4,4,4,
+                                4,30,4,4,
+                                4,4,30,4), nrow=3, ncol=4, byrow=TRUE),
+               rate = matrix(c(1,2,2,2,
+                               2,1,2,2,
+                               2,2,1,2), nrow=3, ncol=4, byrow=TRUE))
+set.seed(12345)
+res2 <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"),
+                 sample=1000, thinning=2, burnin=100, verbose=100,
+                 prioriPars=hypMat, whichPriori="gamma")
 }
 }
 \seealso{

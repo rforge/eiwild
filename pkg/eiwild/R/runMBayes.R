@@ -77,6 +77,18 @@
 #'                  sample=1000, thinning=2, burnin=100,verbose=100)
 #' class(res2)
 #' summary(res2)
+#' 
+#' # with individual alpha-hyperpriori-parameters
+#' hypMat <- list(shape = matrix(c(30,4,4,4,
+#'                                 4,30,4,4,
+#'                                 4,4,30,4), nrow=3, ncol=4, byrow=TRUE),
+#'                rate = matrix(c(1,2,2,2,
+#'                                2,1,2,2,
+#'                                2,2,1,2), nrow=3, ncol=4, byrow=TRUE))
+#' set.seed(12345)
+#' res2 <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"),
+#'                  sample=1000, thinning=2, burnin=100, verbose=100,
+#'                  prioriPars=hypMat, whichPriori="gamma")
 #' }
 #' 
 #' 
@@ -89,260 +101,260 @@ runMBayes <- function(convList,
                       sample, burnin=0,thinning=1,
                       verbose=1, retBeta=FALSE, 
                       seed=NULL){
-    
-    if(is.null(seed)){
-        if (!exists(".Random.seed")) {
-            runif(1) # force generation of a .Random.seed
-        } 
-        seed <- get(".Random.seed") 
-    }
-    .Random.seed <<-seed 
-    
-    formula <- convList$formula
-    rowdf <- convList$rowdf
-    coldf <- convList$coldf
-    M <- convList$M
-    Mdf <- convList$Mdf
-    Zdf <- convList$Zdf
-    Zrc <- convList$Zrc
-    N <- convList$N
-    Xdf <- convList$Xdf
-    Tdf <- convList$Tdf
-    
-    if(sample <1)
-        stop("sample size has to be greater than 0!", call. = FALSE)
-    if(burnin < 0)
-        stop("burnin has to be a positive number!", call. = FALSE)
-    if(thinning < 1)
-        stop("thinning has to be greater than 0!", call. = FALSE)
-    if(verbose < 1)
-        stop("verbose has to be greater than 0!", call. = FALSE)
-    
-    r <- ncol(rowdf)
-    c <- ncol(coldf)
-    prec <- nrow(rowdf)
-    
-    #####
-    # variance of alphas and betas
-    if(is.null(alphaVars)){
-        alphaVars <- matrix(0.25,r,c)
+  
+  if(is.null(seed)){
+    if (!exists(".Random.seed")) {
+      runif(1) # force generation of a .Random.seed
+    } 
+    seed <- get(".Random.seed") 
+  }
+  .Random.seed <<-seed 
+  
+  formula <- convList$formula
+  rowdf <- convList$rowdf
+  coldf <- convList$coldf
+  M <- convList$M
+  Mdf <- convList$Mdf
+  Zdf <- convList$Zdf
+  Zrc <- convList$Zrc
+  N <- convList$N
+  Xdf <- convList$Xdf
+  Tdf <- convList$Tdf
+  
+  if(sample <1)
+    stop("sample size has to be greater than 0!", call. = FALSE)
+  if(burnin < 0)
+    stop("burnin has to be a positive number!", call. = FALSE)
+  if(thinning < 1)
+    stop("thinning has to be greater than 0!", call. = FALSE)
+  if(verbose < 1)
+    stop("verbose has to be greater than 0!", call. = FALSE)
+  
+  r <- ncol(rowdf)
+  c <- ncol(coldf)
+  prec <- nrow(rowdf)
+  
+  #####
+  # variance of alphas and betas
+  if(is.null(alphaVars)){
+    alphaVars <- matrix(0.25,r,c)
+  } else{
+    if(any(alphaVars<=0))
+      stop("alphaVars values have to be greater than 0!", call. = FALSE)
+    if(!all(dim(alphaVars)==c(r,c)))
+      stop("alphaVars matrix must have dimensions ", paste(c(r,c),collapse=", "),"!", call. = FALSE)
+  }
+  if(is.null(betaVars)){
+    betaVars <- array(0.05,c(r,c-1,prec))
+  } else{
+    if(!all(dim(betaVars)==c(r,c-1,prec)))
+      stop("betaVars array must have dimensions ", paste(c(r,c-1,prec),collapse=", "),"!", call. = FALSE)
+    if(!all(betaVars>0))
+      stop("betaVars values have to be greater than 0!\n districts: ",
+           paste(ceiling(which(betaVars <=0)/(r*(c-1))),collapse=", "), call. = FALSE)
+  }
+  
+  if(!( whichPriori %in% c("expo","gamma") ))
+    stop("no correct hyperpriori has been specified", call. = FALSE)
+  
+  
+  #############################################################################
+  #### Gamma priori ###########################################################
+  #############################################################################
+  if(whichPriori=="gamma"){
+    if(is.matrix(prioriPars$shape) & is.matrix(prioriPars$rate)){
+      #################################
+      ## multiple shapes and rates ##
+      #################################
+      if(any(prioriPars$shape<=0) | any(prioriPars$rate<=0)){
+        stop("shape and rate have to be >0", call. = FALSE)
+      } else{
+        shape <- prioriPars$shape
+        rate <- prioriPars$rate
+      }
+      
+      #####
+      # starting values of alpha
+      if(is.null(startValsAlpha)){
+        alphas <- matrix(NA,r,c)
+        for(rr in 1:r) for(cc in 1:c)
+          alphas[rr,cc] <- rgamma(1,shape=shape[rr,cc],rate=rate[rr,cc])
+      } else{
+        alphas <- alphaCheck(startValsAlpha,r,c)
+      }
+      
+      #####
+      # starting values of beta
+      if(is.null(startValsBeta)){
+        betas <- array(NA, dim=c(r,c,prec))
+        for(pp in 1:prec)
+          betas[,,pp] <- rdirichlet(r, rep(1,c))
+        #                betas[rr,,] <- t(rdirichlet(prec, alphas[rr,]))
+      } else{
+        betas <- betaCheck(startValsBeta,r,c,prec)
+      }
+      
+      out <- .Call("eiIndiMDGmulti", 
+                   as.integer(c),as.integer(r), as.integer(prec),
+                   as.numeric(alphas), as.numeric(betas),
+                   as.integer(Tdf), as.integer(Zrc), as.numeric(Xdf), as.integer(rowdf),
+                   as.numeric(shape),as.numeric(rate),as.numeric(alphaVars),as.numeric(betaVars),
+                   as.integer(burnin), as.integer(thinning), as.integer(sample),
+                   as.integer(verbose), as.integer(retBeta))
+      
     } else{
-        if(any(alphaVars<=0))
-            stop("alphaVars values have to be greater than 0!", call. = FALSE)
-        if(!all(dim(alphaVars)==c(r,c)))
-            stop("alphaVars matrix must have dimensions ", paste(c(r,c),collapse=", "),"!", call. = FALSE)
+      ##########################
+      ## one shape and rate ##
+      ##########################
+      if((prioriPars$shape<=0) | (prioriPars$rate <=0)){
+        stop("shape and rate have to be >0!", call. = FALSE)
+      } else{
+        shape <- prioriPars$shape
+        rate <- prioriPars$rate
+      }
+      
+      #####
+      # starting values of alpha
+      if(is.null(startValsAlpha)){
+        alphas <- matrix(rgamma(r*c, shape=shape, rate=rate), r,c)
+      } else{
+        alphas <- alphaCheck(startValsAlpha,r,c)
+      }
+      
+      #####
+      # starting values of beta
+      if(is.null(startValsBeta)){
+        betas <- array(NA, dim=c(r,c,prec))
+        for(pp in 1:prec)
+          betas[,,pp] <- rdirichlet(r, rep(1,c))
+        
+      } else{
+        betas <- betaCheck(startValsBeta,r,c,prec)
+      }
+      
+      #####
+      # generating chain
+      out <- .Call("eiIndiMDG1", 
+                   as.integer(c),as.integer(r), as.integer(prec),
+                   as.numeric(alphas), as.numeric(betas),
+                   as.integer(Tdf), as.integer(Zrc), as.numeric(Xdf), as.integer(rowdf),
+                   as.numeric(shape),as.numeric(rate),as.numeric(alphaVars),as.numeric(betaVars),
+                   as.integer(burnin), as.integer(thinning), as.integer(sample),
+                   as.integer(verbose), as.integer(retBeta))
     }
-    if(is.null(betaVars)){
-        betaVars <- array(0.05,c(r,c-1,prec))
+  }
+  #############################################################################
+  #### Exponential priori #####################################################
+  #############################################################################
+  else if(whichPriori=="expo"){
+    if(is.matrix(prioriPars$lam)){
+      #################################
+      ## multiple lambdas #############
+      #################################
+      if(any(prioriPars$lam<=0)){
+        stop("lambda's have to be >0", call. = FALSE)
+      } else{
+        lam <- prioriPars$lam
+      }
+      
+      #####
+      # starting values of alpha
+      if(is.null(startValsAlpha)){
+        alphas <- matrix(NA,r,c)
+        for(rr in 1:r) for(cc in 1:c)
+          alphas[rr,cc] <- rexp(1,rate=lam[rr,cc])
+      } else{
+        alphas <- alphaCheck(startValsAlpha,r,c)
+      }
+      
+      #####
+      # starting values of beta
+      if(is.null(startValsBeta)){
+        betas <- array(NA, dim=c(r,c,prec))
+        for(pp in 1:prec)
+          betas[,,pp] <- rdirichlet(r, rep(1,c))               
+        #                betas[rr,,] <- t(rdirichlet(prec, alphas[rr,]))
+      } else{
+        betas <- betaCheck(startValsBeta,r,c,prec)
+      }
+      
+      out <- .Call("eiIndiMDEmulti", 
+                   as.integer(c),as.integer(r), as.integer(prec),
+                   as.numeric(alphas), as.numeric(betas),
+                   as.integer(Tdf), as.integer(Zrc), as.numeric(Xdf), as.integer(rowdf),
+                   as.numeric(lam),as.numeric(alphaVars),as.numeric(betaVars),
+                   as.integer(burnin), as.integer(thinning), as.integer(sample),
+                   as.integer(verbose), as.integer(retBeta))
+      
     } else{
-        if(!all(dim(betaVars)==c(r,c-1,prec)))
-            stop("betaVars array must have dimensions ", paste(c(r,c-1,prec),collapse=", "),"!", call. = FALSE)
-        if(!all(betaVars>0))
-            stop("betaVars values have to be greater than 0!\n districts: ",
-                 paste(ceiling(which(betaVars <=0)/(r*(c-1))),collapse=", "), call. = FALSE)
+      ##########################
+      ## one lambda #############
+      ##########################
+      if((prioriPars$lam<=0)){
+        stop("lambda has to be >0!", call. = FALSE)
+      } else{
+        lam <- prioriPars$lam
+      }
+      
+      #####
+      # starting values of alpha
+      if(is.null(startValsAlpha)){
+        alphas <- matrix(rexp(r*c, rate=lam), r,c)
+      } else{
+        alphas <- alphaCheck(startValsAlpha,r,c)
+      }
+      
+      #####
+      # starting values of beta
+      if(is.null(startValsBeta)){
+        betas <- array(NA, dim=c(r,c,prec))
+        for(pp in 1:prec)
+          betas[,,pp] <- rdirichlet(r, rep(1,c))
+        #                betas[rr,,] <- t(rdirichlet(prec, alphas[rr,]))
+      } else{
+        betas <- betaCheck(startValsBeta,r,c,prec)
+      }
+      
+      #####
+      # generating chain
+      out <- .Call("eiIndiMDE1", 
+                   as.integer(c),as.integer(r), as.integer(prec),
+                   as.numeric(alphas), as.numeric(betas),
+                   as.integer(Tdf), as.integer(Zrc), as.numeric(Xdf), as.integer(rowdf),
+                   as.numeric(lam),as.numeric(alphaVars),as.numeric(betaVars),
+                   as.integer(burnin), as.integer(thinning), as.integer(sample),
+                   as.integer(verbose), as.integer(retBeta))
     }
-    
-    if(!( whichPriori %in% c("expo","gamma") ))
-        stop("no correct hyperpriori has been specified", call. = FALSE)
-    
-    
-    #############################################################################
-    #### Gamma priori ###########################################################
-    #############################################################################
-    if(whichPriori=="gamma"){
-        if(is.matrix(prioriPars$shape) & is.matrix(prioriPars$rate)){
-            #################################
-            ## multiple shapes and rates ##
-            #################################
-            if(any(prioriPars$shape<=0) | any(prioriPars$rate<=0)){
-                stop("shape and rate have to be >0", call. = FALSE)
-            } else{
-                shape <- prioriPars$shape
-                rate <- prioriPars$rate
-            }
-            
-            #####
-            # starting values of alpha
-            if(is.null(startValsAlpha)){
-                alphas <- matrix(NA,r,c)
-                for(rr in 1:r) for(cc in 1:c)
-                    alphas[rr,cc] <- rgamma(1,shape=shape[rr,cc],rate=rate[rr,cc])
-            } else{
-                alphas <- alphaCheck(startValsAlpha,r,c)
-            }
-            
-            #####
-            # starting values of beta
-            if(is.null(startValsBeta)){
-                betas <- array(NA, dim=c(r,c,prec))
-                for(rr in 1:r)
-                    betas[,,rr] <- rdirichlet(r, rep(1,c))
-                #                betas[rr,,] <- t(rdirichlet(prec, alphas[rr,]))
-            } else{
-                betas <- betaCheck(startValsBeta,r,c,prec)
-            }
-            
-            out <- .Call("eiIndiMDGmulti", 
-                         as.integer(c),as.integer(r), as.integer(prec),
-                         as.numeric(alphas), as.numeric(betas),
-                         as.integer(Tdf), as.integer(Zrc), as.numeric(Xdf), as.integer(rowdf),
-                         as.numeric(shape),as.numeric(rate),as.numeric(alphaVars),as.numeric(betaVars),
-                         as.integer(burnin), as.integer(thinning), as.integer(sample),
-                         as.integer(verbose), as.integer(retBeta))
-            
-        } else{
-            ##########################
-            ## one shape and rate ##
-            ##########################
-            if((prioriPars$shape<=0) | (prioriPars$rate <=0)){
-                stop("shape and rate have to be >0!", call. = FALSE)
-            } else{
-                shape <- prioriPars$shape
-                rate <- prioriPars$rate
-            }
-            
-            #####
-            # starting values of alpha
-            if(is.null(startValsAlpha)){
-                alphas <- matrix(rgamma(r*c, shape=shape, rate=rate), r,c)
-            } else{
-                alphas <- alphaCheck(startValsAlpha,r,c)
-            }
-            
-            #####
-            # starting values of beta
-            if(is.null(startValsBeta)){
-                betas <- array(NA, dim=c(r,c,prec))
-                for(rr in 1:prec)
-                    betas[,,rr] <- rdirichlet(r, rep(1,c))
-
-            } else{
-                betas <- betaCheck(startValsBeta,r,c,prec)
-            }
-            
-            #####
-            # generating chain
-            out <- .Call("eiIndiMDG1", 
-                         as.integer(c),as.integer(r), as.integer(prec),
-                         as.numeric(alphas), as.numeric(betas),
-                         as.integer(Tdf), as.integer(Zrc), as.numeric(Xdf), as.integer(rowdf),
-                         as.numeric(shape),as.numeric(rate),as.numeric(alphaVars),as.numeric(betaVars),
-                         as.integer(burnin), as.integer(thinning), as.integer(sample),
-                         as.integer(verbose), as.integer(retBeta))
-        }
-    }
-    #############################################################################
-    #### Exponential priori #####################################################
-    #############################################################################
-    else if(whichPriori=="expo"){
-        if(is.matrix(prioriPars$lam)){
-            #################################
-            ## multiple lambdas #############
-            #################################
-            if(any(prioriPars$lam<=0)){
-                stop("lambda's have to be >0", call. = FALSE)
-            } else{
-                lam <- prioriPars$lam
-            }
-            
-            #####
-            # starting values of alpha
-            if(is.null(startValsAlpha)){
-                alphas <- matrix(NA,r,c)
-                for(rr in 1:r) for(cc in 1:c)
-                    alphas[rr,cc] <- rexp(1,rate=lam[rr,cc])
-            } else{
-                alphas <- alphaCheck(startValsAlpha,r,c)
-            }
-            
-            #####
-            # starting values of beta
-            if(is.null(startValsBeta)){
-                betas <- array(NA, dim=c(r,c,prec))
-                for(rr in 1:r)
-                    betas[,,rr] <- rdirichlet(r, rep(1,c))               
-                #                betas[rr,,] <- t(rdirichlet(prec, alphas[rr,]))
-            } else{
-                betas <- betaCheck(startValsBeta,r,c,prec)
-            }
-            
-            out <- .Call("eiIndiMDEmulti", 
-                         as.integer(c),as.integer(r), as.integer(prec),
-                         as.numeric(alphas), as.numeric(betas),
-                         as.integer(Tdf), as.integer(Zrc), as.numeric(Xdf), as.integer(rowdf),
-                         as.numeric(lam),as.numeric(alphaVars),as.numeric(betaVars),
-                         as.integer(burnin), as.integer(thinning), as.integer(sample),
-                         as.integer(verbose), as.integer(retBeta))
-            
-        } else{
-            ##########################
-            ## one lambda #############
-            ##########################
-            if((prioriPars$lam<=0)){
-                stop("lambda has to be >0!", call. = FALSE)
-            } else{
-                lam <- prioriPars$lam
-            }
-            
-            #####
-            # starting values of alpha
-            if(is.null(startValsAlpha)){
-                alphas <- matrix(rexp(r*c, rate=lam), r,c)
-            } else{
-                alphas <- alphaCheck(startValsAlpha,r,c)
-            }
-            
-            #####
-            # starting values of beta
-            if(is.null(startValsBeta)){
-                betas <- array(NA, dim=c(r,c,prec))
-                for(rr in 1:r)
-                    betas[,,rr] <- rdirichlet(r, rep(1,c))
-                #                betas[rr,,] <- t(rdirichlet(prec, alphas[rr,]))
-            } else{
-                betas <- betaCheck(startValsBeta,r,c,prec)
-            }
-            
-            #####
-            # generating chain
-            out <- .Call("eiIndiMDE1", 
-                         as.integer(c),as.integer(r), as.integer(prec),
-                         as.numeric(alphas), as.numeric(betas),
-                         as.integer(Tdf), as.integer(Zrc), as.numeric(Xdf), as.integer(rowdf),
-                         as.numeric(lam),as.numeric(alphaVars),as.numeric(betaVars),
-                         as.integer(burnin), as.integer(thinning), as.integer(sample),
-                         as.integer(verbose), as.integer(retBeta))
-        }
-    }
-    
-    #####
-    # converting to coda objects
-    
-    colnames(out$alphaDraws) <- paste("alpha",
-                                      rep(colnames(rowdf),c),
-                                      rep(colnames(coldf),each=r),
-                                      sep=".")
-    colnames(out$cellCounts) <- paste("counts",
-                                      rep(colnames(rowdf),c),
-                                      rep(colnames(coldf),each=r),
-                                      sep=".")
-    if(retBeta==TRUE){
-        colnames(out$betaDraws) <- paste(rep(paste("beta",
-                                                   rep(colnames(rowdf),c),
-                                                   rep(colnames(coldf),each=r),
-                                                   sep="."),
-                                             times=prec),
-                                         rep(1:prec,each=r*c),
-                                         sep="_p")
-        out$betaDraws <- mcmc(out$betaDraws)
-    }
-    
-    #no thin=thinning because of plot problems
-    out$alphaDraws <- mcmc(out$alphaDraws)
-    out$cellCounts <- mcmc(out$cellCounts)
-    out$alphaVars <- alphaVars
-    out$betaVars <- betaVars
-    attr(out, "seed")<-seed
-    
-    return(out)
+  }
+  
+  #####
+  # converting to coda objects
+  
+  colnames(out$alphaDraws) <- paste("alpha",
+                                    rep(colnames(rowdf),c),
+                                    rep(colnames(coldf),each=r),
+                                    sep=".")
+  colnames(out$cellCounts) <- paste("counts",
+                                    rep(colnames(rowdf),c),
+                                    rep(colnames(coldf),each=r),
+                                    sep=".")
+  if(retBeta==TRUE){
+    colnames(out$betaDraws) <- paste(rep(paste("beta",
+                                               rep(colnames(rowdf),c),
+                                               rep(colnames(coldf),each=r),
+                                               sep="."),
+                                         times=prec),
+                                     rep(1:prec,each=r*c),
+                                     sep="_p")
+    out$betaDraws <- mcmc(out$betaDraws)
+  }
+  
+  #no thin=thinning because of plot problems
+  out$alphaDraws <- mcmc(out$alphaDraws)
+  out$cellCounts <- mcmc(out$cellCounts)
+  out$alphaVars <- alphaVars
+  out$betaVars <- betaVars
+  attr(out, "seed")<-seed
+  
+  return(out)
 }

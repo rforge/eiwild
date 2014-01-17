@@ -1,3 +1,8 @@
+Changes in eiwild version 0.6.4
+- fixed major bug in runMBayes().
+ It wasn't functioning properly with other hyperpriori's than gamma with one parameter 
+- added new example to runMBayes() and indAggEi()
+
 Changes in eiwild version 0.6.3
 - changed Description file (added URL)
 - fixed small bug in prioriPlot()
