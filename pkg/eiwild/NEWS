@@ -1,3 +1,6 @@
+Changes in eiwild version 0.6.5
+- fixed small bug in error message of convertEiData()
+
 Changes in eiwild version 0.6.4
 - fixed major bug in runMBayes().
  It wasn't functioning properly with other hyperpriori's than gamma with one parameter 
