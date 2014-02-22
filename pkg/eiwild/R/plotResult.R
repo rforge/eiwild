@@ -50,15 +50,18 @@ plotResult <- function(x, abs=FALSE, bgColors=c("white", "steelblue", 10),
     
         # making colours
     colLength <- as.numeric(bgColors[3])
-    if(abs==TRUE){
-        steps <- (max(x)-min(x))/colLength
-        minx <- min(x)-.01
-    } else {
-        steps <- 1/colLength
-        minx <- -.01
+    if (abs == TRUE) {
+      steps <- (max(x) - min(x))/colLength
+      minx <- min(x) - 0.01
+      brkPoints <- c(minx, steps * 1:colLength)
+      brkPoints[colLength + 1] <- max(x) + 0.01
     }
-    brkPoints <- c(minx, steps * 1:colLength)
-    brkPoints[colLength+1] <- max(x)+.01
+    else {
+      steps <- 1/colLength
+      minx <- -0.01
+      brkPoints <- c(minx, steps * 1:colLength)
+      brkPoints[colLength + 1] <- 1.01
+    }
     colCatIndiz <- as.integer(cut(x, brkPoints))
     colorF <- colorRampPalette(bgColors[1:2])
     cols <- colorF(colLength)

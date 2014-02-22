@@ -1,9 +1,11 @@
+Changes in eiwild version 0.6.6
+- fixed bug in plotResult(abs=FALSE) with color break points
+
 Changes in eiwild version 0.6.5
 - fixed small bug in error message of convertEiData()
 
 Changes in eiwild version 0.6.4
-- fixed major bug in runMBayes().
- It wasn't functioning properly with other hyperpriori's than gamma with one parameter 
+- fixed major bug in runMBayes(). It wasn't functioning properly with other hyperpriori distributions than gamma with one parameter 
 - added new example to runMBayes() and indAggEi()
 
 Changes in eiwild version 0.6.3
