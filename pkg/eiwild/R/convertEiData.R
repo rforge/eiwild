@@ -143,7 +143,7 @@ convertEiData <- function(form, aggr, indi=NULL, IDCols=c("ID")){
          " bigger individual than aggregate data in columns!", call.=FALSE)
   }
   
-  coldf[indiIDs,][10,]<Zdf[10,]
+  #coldf[indiIDs,][10,]<Zdf[10,]
   
   
   #   Zdf
