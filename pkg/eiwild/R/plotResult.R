@@ -50,6 +50,8 @@ plotResult <- function(x, abs=FALSE, bgColors=c("white", "steelblue", 10),
     
         # making colours
     colLength <- as.numeric(bgColors[3])
+    if(colLength > 256) 
+      warning("Cannot generate a color pallette with more than 256 colors", .call=FALSE)
     if (abs == TRUE) {
       steps <- (max(x) - min(x))/colLength
       minx <- min(x) - 0.01

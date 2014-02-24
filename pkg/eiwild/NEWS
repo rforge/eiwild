@@ -1,3 +1,6 @@
+Changes in eiwild version 0.6.7
+- added warning in plotResult
+
 Changes in eiwild version 0.6.6
 - fixed bug in plotResult(abs=FALSE) with color break points
 - erased strange code line in convertEiData
