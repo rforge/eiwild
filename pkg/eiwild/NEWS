@@ -1,5 +1,6 @@
 Changes in eiwild version 0.6.7
 - added warning in plotResult
+- added functionality to color negative values in plotResult (automated)
 
 Changes in eiwild version 0.6.6
 - fixed bug in plotResult(abs=FALSE) with color break points

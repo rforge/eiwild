@@ -1,9 +1,9 @@
 #'
-#' plots result of the beta table
+#' plots result of the voter transition table
 #' 
 #' @description
-#' !!! Work in progress. not finished !!!
-#' only works for betatables
+#' plots results of the voter transition table. Supports absolute values, relative values
+#' and negative values 
 #' 
 #' @param x \code{matrix} with results
 #' @param abs \code{TRUE} if values are not between [0,1] (Default is \code{FALSE})
@@ -24,9 +24,13 @@
 #' form <- cbind(CSU_2, SPD_2, LINK_2, GRUN_2) ~ cbind(CSU_1, SPD_1, Link_1)
 #' set.seed(1234)
 #' res <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"),
+#'                   sample=1000, thinning=2, burnin=100,verbose=100)
+#' res2 <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"),
 #'                  sample=1000, thinning=2, burnin=100,verbose=100)
 #' 
+#' 
 #' tabs <- summary(res)
+#' tabs2 <- summary(res2)
 #' plotResult(round(tabs$relative,3))
 #' plotResult(tabs$absolut, abs=TRUE)
 #' bal <- getBalance(tabs$absolut, which=c("c","GRUN_2"))
@@ -34,6 +38,9 @@
 #' 
 #' plotResult(round(tabs$relative,3), bgColors=c("white", "darkorange", 9))
 #' plotResult(round(tabs$relative,3), bgColors=c("white", "darkorange", 5))
+#' 
+#' plotResult(round(tabs$relative,3) - round(tabs2$relative, 3), abs=TRUE,
+#'            bgColors=c("white", "darkorange", 9))
 #' 
 #' # ugly ;)
 #' plotResult(round(tabs$relative,3), bgColors=c("blue", "red", 5)) 
@@ -53,6 +60,11 @@ plotResult <- function(x, abs=FALSE, bgColors=c("white", "steelblue", 10),
     if(colLength > 256) 
       warning("Cannot generate a color pallette with more than 256 colors", .call=FALSE)
     if (abs == TRUE) {
+      if(min(x) < 0){ 
+        # if there are negative values to plot x is replaced with abs(x) to have colors, too
+        xSafe <- x
+        x <- abs(x)
+      }
       steps <- (max(x) - min(x))/colLength
       minx <- min(x) - 0.01
       brkPoints <- c(minx, steps * 1:colLength)
@@ -73,6 +85,9 @@ plotResult <- function(x, abs=FALSE, bgColors=c("white", "steelblue", 10),
     for (j in 1:length(x))
         bgCols[j] <- cols[colCatIndiz[j]]
     bgCols <- matrix(bgCols, nrow(x), ncol(x))
+    
+    if(exists("xSafe"))
+      x <- xSafe
     
         # making plot
     plot.new()

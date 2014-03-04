@@ -1,6 +1,6 @@
 \name{plotResult}
 \alias{plotResult}
-\title{plots result of the beta table}
+\title{plots result of the voter transition table}
 \usage{
 plotResult(x, abs = FALSE, bgColors = c("white", "steelblue", 10),
   rectOpts = list(border = grey(0.7)), cellOpts = list(cex = 1),
@@ -26,8 +26,8 @@ plotResult(x, abs = FALSE, bgColors = c("white", "steelblue", 10),
   dimnames}
 }
 \description{
-!!! Work in progress. not finished !!! only works for
-betatables
+plots results of the voter transition table. Supports
+absolute values, relative values and negative values
 }
 \examples{
 \dontrun{
@@ -36,9 +36,13 @@ data(topleveldat)
 form <- cbind(CSU_2, SPD_2, LINK_2, GRUN_2) ~ cbind(CSU_1, SPD_1, Link_1)
 set.seed(1234)
 res <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"),
+                  sample=1000, thinning=2, burnin=100,verbose=100)
+res2 <- indAggEi(form=form, aggr=aggr, indi=indi, IDCols=c("ID","ID"),
                  sample=1000, thinning=2, burnin=100,verbose=100)
 
+
 tabs <- summary(res)
+tabs2 <- summary(res2)
 plotResult(round(tabs$relative,3))
 plotResult(tabs$absolut, abs=TRUE)
 bal <- getBalance(tabs$absolut, which=c("c","GRUN_2"))
@@ -46,6 +50,9 @@ plotResult(bal, abs=TRUE)
 
 plotResult(round(tabs$relative,3), bgColors=c("white", "darkorange", 9))
 plotResult(round(tabs$relative,3), bgColors=c("white", "darkorange", 5))
+
+plotResult(round(tabs$relative,3) - round(tabs2$relative, 3), abs=TRUE,
+           bgColors=c("white", "darkorange", 9))
 
 # ugly ;)
 plotResult(round(tabs$relative,3), bgColors=c("blue", "red", 5))
