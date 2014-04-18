@@ -23,7 +23,8 @@ tuneVars(form, aggr, indi = NULL, IDCols = c("ID"), whichPriori = "gamma",
   NULL}
 
   \item{IDCols}{vector of length 2 (or 1) giving the
-  columnnames or numbers of ID column}
+  columnnames or numbers of ID column.  First element for
+  \code{aggr} and second element for \code{indi}.}
 
   \item{whichPriori}{character string defining the
   hyperpriori. default="gamma"}

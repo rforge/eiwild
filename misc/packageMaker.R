@@ -8,15 +8,15 @@ library(devtools)
 
 
 
-load_data(pkg="eiwild/")
-
-document("../pkg/eiwild/")
-
-dev_help("tuneVars")
-dev_example("tuneVars")
-
-build("../pkg/eiwild/")
-build("../pkg/eiwild/", binary=TRUE)
+# load_data(pkg="eiwild/")
+# 
+# document("../pkg/eiwild/")
+# 
+# dev_help("tuneVars")
+# dev_example("tuneVars")
+# 
+# build("../pkg/eiwild/")
+# build("../pkg/eiwild/", binary=TRUE)
 
 
 # During development
@@ -26,7 +26,7 @@ install("../pkg/eiwild/")
 library(eiwild) # uses the development version
 
 
-
+### finalizing
 load_all("../pkg/eiwild/")
 document("../pkg/eiwild/")
 install("../pkg/eiwild")

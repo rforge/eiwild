@@ -10,7 +10,8 @@
 #' @param aggr data.frame with aggregate data. One district per line and one column giving one ID per district. (see Details)
 #' @param indi data.frame with individual data. One district per line and one column giving one ID per district. (see Details)
 #' If no individual data are present it defaults to NULL
-#' @param IDCols vector of length 2 (or 1) giving the columnnames or numbers of ID column
+#' @param IDCols vector of length 2 (or 1) giving the columnnames or numbers of ID column. 
+#'          First element for \code{aggr} and second element for \code{indi}.
 #' @param whichPriori character string defining the hyperpriori. default="gamma"
 #' @param prioriPars vector giving the parameters of the hyperpriori
 #' 

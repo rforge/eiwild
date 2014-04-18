@@ -22,8 +22,9 @@ indAggEi(form, aggr, indi = NULL, IDCols = c("ID"), whichPriori = "gamma",
   district. (see Details) If no individual data are present
   it defaults to \code{NULL}}
 
-  \item{IDCols}{vector of length 2 giving the column-names
-  or numbers of ID column}
+  \item{IDCols}{vector of length 2 (or 1) giving the
+  column-names or numbers of ID column.  First element for
+  \code{aggr} and second element for \code{indi}.}
 
   \item{whichPriori}{character string specifying the chosen
   hyperpriori.  Options are \code{"gamma"} or \code{"expo"}

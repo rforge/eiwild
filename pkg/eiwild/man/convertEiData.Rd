@@ -18,8 +18,9 @@ convertEiData(form, aggr, indi = NULL, IDCols = c("ID"))
   district. (see Details) If no individual data are present
   it defaults to \code{NULL}}
 
-  \item{IDCols}{vector of length 2 giving the column-names
-  or numbers of ID column}
+  \item{IDCols}{vector of length 2 (or 1) giving the
+  column-names or numbers of ID column.  First element for
+  \code{aggr} and second element for \code{indi}.}
 }
 \value{
 \code{list} with components needed for the Metropolis

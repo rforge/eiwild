@@ -12,7 +12,8 @@
 #' @param indi \code{data.frame} with individual data. 
 #'          One district per line and one column giving one ID per district. (see Details)
 #'          If no individual data are present it defaults to \code{NULL}
-#' @param IDCols vector of length 2 giving the column-names or numbers of ID column
+#' @param IDCols vector of length 2 (or 1) giving the column-names or numbers of ID column. 
+#'          First element for \code{aggr} and second element for \code{indi}.
 #' 
 #' @param whichPriori character string specifying the chosen hyperpriori. 
 #'          Options are \code{"gamma"} or \code{"expo"} (see Details)
