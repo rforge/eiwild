@@ -1,5 +1,6 @@
 Changes in eiwild version 0.6.8
 - minor help-file change
+- added minor if-stop in getBalance()
 
 Changes in eiwild version 0.6.7
 - added warning in plotResult

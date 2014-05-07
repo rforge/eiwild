@@ -37,53 +37,53 @@
 #' @S3method summary eiwild
 
 summary.eiwild <- function(object, cred=0.95, ...){
-   
-   r <- ncol(object$rowdf)
-   c <- ncol(object$coldf)
-   le <- nrow(object$draws$alphaDraws)
-   
-   # absolute and relative means for alphas and cellCounts
-   alMeans <- matrix(colMeans(object$draws$alphaDraws),r,c)
-   cellMeans <- matrix(colMeans(object$draws$cellCounts),r,c)
-   rel <- cellMeans/rowSums(cellMeans)
-   relCol <- t(t(cellMeans)/colSums(cellMeans))
-   rownames(rel) <- colnames(object$rowdf)
-   colnames(rel) <- colnames(object$coldf)
-   dimnames(alMeans) <- dimnames(cellMeans) <- dimnames(relCol) <- dimnames(rel)
-   
-   # credibility interval
-   if(cred>1|cred<0)
-      stop("\"cred\" has to be between 0 and 1!" ,call.=FALSE)
-   inter <- c((1-cred)/2, cred + (1-cred)/2)
-   countsCred <- apply(object$draws$cellCounts, 2, "quantile", inter)
-   alphaCred <- apply(object$draws$alphaDraws, 2, "quantile", inter)
-   
-   relAll <- t(sapply(1:le, function(k){ # make cell-wise probability per sample-iteration
-      tmp <- matrix(object$draws$cellCounts[k,],r,c)
-      c( tmp / rowSums(tmp))
-      }))
-   relativeCred <- apply(relAll, 2, "quantile", inter)
-   colnames(relativeCred) <- gsub("alpha","betaGlob",colnames(alphaCred))
-   
-   ret <- list(relative = rel,
-               absolut = round(cellMeans),
-               alphaMeans = alMeans,
-               relativeCol = relCol,
-               countsCred = round(countsCred),
-               alphaCred = alphaCred,
-               relativeCred = relativeCred)
-   class(ret) <- c("summary.eiwild", class(ret))
-   return(ret)
+  
+  r <- ncol(object$rowdf)
+  c <- ncol(object$coldf)
+  le <- nrow(object$draws$alphaDraws)
+  
+  # absolute and relative means for alphas and cellCounts
+  alMeans <- matrix(colMeans(object$draws$alphaDraws),r,c)
+  cellMeans <- matrix(colMeans(object$draws$cellCounts),r,c)
+  rel <- cellMeans/rowSums(cellMeans)
+  relCol <- t(t(cellMeans)/colSums(cellMeans))
+  rownames(rel) <- colnames(object$rowdf)
+  colnames(rel) <- colnames(object$coldf)
+  dimnames(alMeans) <- dimnames(cellMeans) <- dimnames(relCol) <- dimnames(rel)
+  
+  # credibility interval
+  if(cred>1|cred<0)
+    stop("\"cred\" has to be between 0 and 1!" ,call.=FALSE)
+  inter <- c((1-cred)/2, cred + (1-cred)/2)
+  countsCred <- apply(object$draws$cellCounts, 2, "quantile", inter)
+  alphaCred <- apply(object$draws$alphaDraws, 2, "quantile", inter)
+  
+  relAll <- t(sapply(1:le, function(k){ # make cell-wise probability per sample-iteration
+    tmp <- matrix(object$draws$cellCounts[k,],r,c)
+    c( tmp / rowSums(tmp))
+  }))
+  relativeCred <- apply(relAll, 2, "quantile", inter)
+  colnames(relativeCred) <- gsub("alpha","betaGlob",colnames(alphaCred))
+  
+  ret <- list(relative = rel,
+              absolut = round(cellMeans),
+              alphaMeans = alMeans,
+              relativeCol = relCol,
+              countsCred = round(countsCred),
+              alphaCred = alphaCred,
+              relativeCred = relativeCred)
+  class(ret) <- c("summary.eiwild", class(ret))
+  return(ret)
 }
 
 #' @S3method print summary.eiwild
 
 print.summary.eiwild <- function(x, ...){
-   cat("relative cellMeans:\n")
-   print(round(x$relative,4))
-   cat("\n")
-   cat("absolute cellMeans:\n")
-   print(round(x$absolut,4))  
+  cat("relative cellMeans:\n")
+  print(round(x$relative,4))
+  cat("\n")
+  cat("absolute cellMeans:\n")
+  print(round(x$absolut,4))  
 }
 
 
@@ -112,47 +112,50 @@ print.summary.eiwild <- function(x, ...){
 
 ## TO DO: make it work with more than one extra column/row
 getBalance <- function(x, rnd=1, zero=TRUE, which=NULL){
-   
-   r <- nrow(x)
-   c <- ncol(x)   
-   if( !any(r==c | !is.null(which)) )
-      stop("Either \"which\" has to be specified or \"x\" has to be square!" ,call.=FALSE)
-   
-      # Für den Fall dass which spezifiziert ist
-   if(!is.null(which)){
-      if( !which[1] %in% c("r","c")){
-         stop("\"which[1]\" has to be \"r\" or \"l\" ", call.=FALSE)
-      } else{
-         if(which[1] =="r"){
-            which2 <- which(rownames(x)==which[2])
-            x2 <- x[-which2,]
-         } else{
-            which2 <- which(colnames(x)==which[2])
-            x2 <- x[,-which2]
-         }
-      }
-      if(ncol(x2)!=nrow(x2))
-         stop("\"which\" wasn't specified enough. Table isn't square!", call.=FALSE)
-      
-      x3 <- x2 - t(x2)
-      
+  
+  r <- nrow(x)
+  c <- ncol(x)   
+  if( !any(r==c | !is.null(which)) )
+    stop("Either \"which\" has to be specified or \"x\" has to be square!" ,call.=FALSE)
+  
+  if((r==c) & !is.null(which)) 
+    stop("\"x\" is square and which is specified. Correct arguments", call.=FALSE)
+  # Für den Fall dass which spezifiziert ist
+  
+  if(!is.null(which)){
+    if( !which[1] %in% c("r","c")){
+      stop("\"which[1]\" has to be \"r\" or \"l\" ", call.=FALSE)
+    } else{
       if(which[1] =="r"){
-         ret <- rbind(x3,x[which2,])
-         rownames(ret)[nrow(ret)] <- rownames(x)[which2]
+        which2 <- which(rownames(x)==which[2])
+        x2 <- x[-which2,]
       } else{
-         ret <- cbind(x3,x[,which2])
-         colnames(ret)[ncol(ret)] <- colnames(x)[which2]
-      } 
-   } else if(r==c){
-      ret <- x - t(x)
-   }
-   
-   if(zero==TRUE)
-      ret[which(ret<0)] <- 0 
-   
-   ret <- round(ret/rnd)*rnd
-   
-   return(ret)
+        which2 <- which(colnames(x)==which[2])
+        x2 <- x[,-which2]
+      }
+    }
+    if(ncol(x2)!=nrow(x2))
+      stop("\"which\" wasn't specified enough. Table isn't square!", call.=FALSE)
+    
+    x3 <- x2 - t(x2)
+    
+    if(which[1] =="r"){
+      ret <- rbind(x3,x[which2,])
+      rownames(ret)[nrow(ret)] <- rownames(x)[which2]
+    } else{
+      ret <- cbind(x3,x[,which2])
+      colnames(ret)[ncol(ret)] <- colnames(x)[which2]
+    } 
+  } else if(r==c){
+    ret <- x - t(x)
+  }
+  
+  if(zero==TRUE)
+    ret[which(ret<0)] <- 0 
+  
+  ret <- round(ret/rnd)*rnd
+  
+  return(ret)
 }
 
 
